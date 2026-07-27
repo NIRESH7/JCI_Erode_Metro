@@ -1,0 +1,131 @@
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+.login-page {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+  margin: 0;
+  background: #ffffff;
+}
+
+.login-brand,
+.login-panel {
+  flex: 1 1 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem;
+}
+
+.login-brand {
+  background: #000000;
+  border-right: 1px solid #1a1a1a;
+}
+
+.login-panel {
+  background: #ffffff;
+}
+
+.login-logo {
+  display: block;
+  width: min(100%, 380px);
+  max-height: 70vh;
+  height: auto;
+  object-fit: contain;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 420px;
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 12px 40px rgba(15, 23, 42, 0.08);
+}
+
+.form-align {
+  padding: 2.5rem 2rem;
+}
+
+.form-align h2 {
+  margin-bottom: 1.5rem;
+}
+
+.form-group {
+  margin-bottom: 1.25rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #334155;
+}
+
+.form-control {
+  min-height: 44px;
+  border-radius: 8px;
+  border-color: #cbd5e1;
+}
+
+.form-control:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.15);
+}
+
+#signin {
+  text-align: center;
+  font-weight: 700;
+  font-family: Georgia, "Times New Roman", Times, serif;
+  color: #0f172a;
+}
+
+.button {
+  margin-top: 0.5rem;
+  text-align: center;
+}
+
+.login-btn {
+  min-width: 140px;
+  min-height: 44px;
+  border-radius: 8px;
+  font-weight: 600;
+  padding: 0.5rem 1.5rem;
+}
+
+.login-error {
+  margin: 0 0 1rem;
+  color: #dc2626;
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+@media (max-width: 991px) {
+  .login-page {
+    flex-direction: column;
+  }
+
+  .login-brand {
+    flex: 0 0 auto;
+    min-height: 38vh;
+    border-right: none;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 2rem 1.5rem;
+  }
+
+  .login-panel {
+    flex: 1 1 auto;
+    align-items: flex-start;
+    padding: 2rem 1.5rem 3rem;
+  }
+
+  .login-logo {
+    width: min(100%, 280px);
+    max-height: 28vh;
+  }
+}

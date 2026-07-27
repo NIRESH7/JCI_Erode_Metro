@@ -1,0 +1,2 @@
+json_key_file("/Users/gokulakrishnan/development/Nutz/flutter_projects/Android-app_signing_keys/sportswander/GCP/pc-api-5837501717446609499-27-2b96da7572b4.json") # Path to the json secret file - Follow https://docs.fastlane.tools/actions/supply/#setup to get one
+package_name("com.nutz.jci") # e.g. com.krausefx.app

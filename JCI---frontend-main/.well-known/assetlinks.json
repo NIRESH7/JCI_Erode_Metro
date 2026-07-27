@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.nutz.jci",
+      "sha256_cert_fingerprints": [
+        "CB:E0:BE:2A:01:80:5E:0B:70:15:CC:F0:EB:A2:F8:73:99:1F:97:54:97:95:65:7C:EB:86:2A:2E:93:B7:38:FB"
+      ]
+    }
+  }
+]

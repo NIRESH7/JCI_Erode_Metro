@@ -1,0 +1,13 @@
+.dart_tool/
+build/
+.idea/
+.DS_Store
+__pycache__
+.env
+.env.*
+!.env.example
+!.env.production.example
+*.jks
+*.keystore
+upload_certificate.pem
+android/key.properties

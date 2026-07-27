@@ -1,0 +1,4 @@
+- Fixed JCI logo display (no white box background)
+- Improved splash screen and login screen layout
+- Referral and member login improvements
+- Bug fixes and performance improvements

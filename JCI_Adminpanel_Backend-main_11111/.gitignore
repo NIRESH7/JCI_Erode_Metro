@@ -1,0 +1,11 @@
+node_modules
+yarn-error.log
+.sequelizerc
+Archive.zip
+.DS_Store
+package-lock.json
+.env
+.env.*
+!.env.example
+!.env.production.example
+!.env.production

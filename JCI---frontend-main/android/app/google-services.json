@@ -1,0 +1,38 @@
+{
+  "project_info": {
+    "project_number": "706439036840",
+    "project_id": "jci-erode-greencity",
+    "storage_bucket": "jci-erode-greencity.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:706439036840:android:ed3352a4b42447f5d4a79d",
+        "android_client_info": {
+          "package_name": "com.nutz.jci"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "295856421490-f2k05ft6c7gqs7eh2dlhk5mfcg03lrbo.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.nutz.jci",
+            "certificate_hash": "2e0d5f6de282327575f281a6188924900a0b5bd1d"
+          }
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDZBgrffBFPBRWaZRkU_vO5jpMEl06alDw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

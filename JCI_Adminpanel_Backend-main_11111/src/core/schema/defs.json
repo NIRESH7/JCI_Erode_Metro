@@ -1,0 +1,36 @@
+{
+    "$id": "defs",
+    "definitions": {
+      
+        "Admin": {
+            "email": {
+                "type": "string",
+                "title": "email",
+                "format": "email"
+            },
+            "phone": {
+                "type": "number",
+                "title": "Admin Contact"
+            },
+            "username": {
+                "type": "string",
+                "title": "UserName",
+                "format": "onlyAlpha"
+            },
+            "password": {
+                "type": "string",
+                "title": "firstname",
+                "format": "onlyAlpha"
+            },
+            "status": {
+                "type": "string",
+                "title": "Admin Account Status",
+                "enum": [
+                    "active",
+                    "inactive",
+                    "terminated"
+                ]
+            }
+        }
+    }
+}
