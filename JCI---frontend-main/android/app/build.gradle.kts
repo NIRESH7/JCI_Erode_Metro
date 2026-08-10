@@ -13,7 +13,8 @@ plugins {
 }
 
 android {
-    namespace = "com.nutz.jci"
+    // Unique from Play Store app (com.nutz.jci) so both can install on one device
+    namespace = "com.nutz.jci.metro"
     compileSdk = 36
     ndkVersion = "28.2.13676358"
 
@@ -28,7 +29,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.nutz.jci"
+        applicationId = "com.nutz.jci.metro"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
@@ -52,7 +53,13 @@ android {
 
     buildTypes {
         release {
-            signingConfig = signingConfigs.getByName("release")
+            // Use Play release keystore when android/key.properties exists; otherwise debug (local APK).
+            val keyPropertiesFile = rootProject.file("key.properties")
+            signingConfig = if (keyPropertiesFile.exists()) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
             // SYMBOL_TABLE strip often fails on Windows NDK; omit so AAB builds reliably.
             // Play Console still accepts the bundle without native debug symbols.
         }

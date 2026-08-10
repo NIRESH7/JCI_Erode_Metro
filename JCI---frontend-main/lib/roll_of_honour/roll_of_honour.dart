@@ -10,58 +10,68 @@ class RollOfHonour extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustAppBar(Titles.roh).initAppBar(),
+      backgroundColor: const Color(0xFFF5F7FA),
+      appBar: CustAppBar(
+        Titles.roh,
+        showBack: true,
+        onBack: () {
+          if (Navigator.of(context).canPop()) {
+            Navigator.of(context).pop();
+          } else if (Get.key.currentState?.canPop() ?? false) {
+            Get.back();
+          } else {
+            Get.offAllNamed('/home');
+          }
+        },
+      ).initAppBar(),
       body: SafeArea(
         child: Responsive.body(
           context,
           Padding(
-          padding: EdgeInsets.fromLTRB(
-            Responsive.horizontalPadding(context),
-            0,
-            Responsive.horizontalPadding(context),
-            20,
-          ),
-          child: GridView.builder(
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
+            padding: EdgeInsets.fromLTRB(
+              Responsive.horizontalPadding(context),
+              8,
+              Responsive.horizontalPadding(context),
+              20,
             ),
-            itemBuilder: (ctx, idx) {
-              return _gridCard(ctx, DateTime.now().year - idx);
-            },
-            itemCount: _count,
+            child: GridView.builder(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                crossAxisSpacing: 10,
+                mainAxisSpacing: 10,
+                childAspectRatio: 1.15,
+              ),
+              itemBuilder: (ctx, idx) {
+                return _gridCard(DateTime.now().year - idx);
+              },
+              itemCount: _count,
+            ),
           ),
-        ),
         ),
       ),
     );
   }
 
-  _gridCard(BuildContext context, var year) {
-    return GestureDetector(
-      onTap: () {
-        Get.toNamed('/roh_details', arguments: [year]);
-      },
-      child: Container(
-        padding: EdgeInsets.all(10),
-        margin: EdgeInsets.all(5),
-        decoration: BoxDecoration(boxShadow: [
-          BoxShadow(
-            color: Color(0xff1A000000),
-            blurRadius: 10,
-            offset: Offset(0, 0),
+  Widget _gridCard(int year) {
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: () => Get.toNamed('/roh_details', arguments: [year]),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: const Color(0xFFE8EEF4)),
           ),
-          BoxShadow(
-            color: Color(0xffffffff),
-            blurRadius: 1,
-            offset: Offset(0, 0),
-          ),
-        ]),
-        child: Center(
-          child: Text(
-            "$year",
-            style: TextStyle(
-              fontFamily: 'pop-med',
-              fontSize: 16,
+          child: Center(
+            child: Text(
+              '$year',
+              style: const TextStyle(
+                fontFamily: 'pop-semibold',
+                fontSize: 17,
+                color: Color(0xFF23346B),
+              ),
             ),
           ),
         ),

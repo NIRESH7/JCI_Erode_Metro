@@ -4,6 +4,7 @@ import moment from "moment";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { ToastContainer, toast } from "react-toastify";
 import { useParams } from "react-router-dom";
+import BackButton from "../components/BackButton";
 function UpdateEvent() {
   const { id } = useParams();
   const [event_name, setEvent_name] = useState("");
@@ -89,6 +90,7 @@ function UpdateEvent() {
     <div>
       <form onSubmit={handleSubmit}>
         <div className="container p-3">
+          <BackButton to="/admin/EventList" />
           <h5 className="d-inline-block mb-3">UPDATE EVENT</h5>
           <div style={{ maxWidth: 600 }}>
             <div className="form-group">

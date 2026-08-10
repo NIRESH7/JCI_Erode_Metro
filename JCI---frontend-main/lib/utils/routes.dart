@@ -6,6 +6,7 @@ import 'package:jci/referral/forgot_password.dart';
 import 'package:jci/referral/logged_in_members.dart';
 import 'package:jci/referral/member_login.dart';
 import 'package:jci/referral/member_setup.dart';
+import 'package:jci/referral/notifications_screen.dart';
 import 'package:jci/referral/referral_detail.dart';
 import 'package:jci/referral/referral_page.dart';
 import 'package:jci/fitness_club/fitness_club_page.dart';
@@ -84,6 +85,12 @@ class Routes {
       transition: AppNavigation.modalTransition,
     ),
     AppNavigation.page(name: '/referral', page: () => const ReferralPage()),
+    AppNavigation.page(
+      name: '/notifications',
+      page: () => const NotificationsScreen(),
+      transition: AppNavigation.sharedAxisTransition,
+      customTransition: AppNavigation.sharedAxisHorizontal,
+    ),
     AppNavigation.page(
       name: '/referral-detail',
       page: () => ReferralDetailScreen(referralId: int.parse('${Get.arguments}')),

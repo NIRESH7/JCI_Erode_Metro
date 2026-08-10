@@ -39,8 +39,8 @@ class LocalNotificationService {
       if (message != null) {
         final NotificationDetails notificationDetails = NotificationDetails(
           android: AndroidNotificationDetails(
-            "JciGreenCity", //id
-            "JciGreenCity channel",
+            "JciMetro", //id
+            "JciMetro channel",
 
             importance: Importance.max,
             priority: Priority.high,
@@ -60,8 +60,8 @@ class LocalNotificationService {
       } else {
         final NotificationDetails notificationDetails = NotificationDetails(
           android: AndroidNotificationDetails(
-            "JciGreenCity", //id
-            "JciGreenCity channel",
+            "JciMetro", //id
+            "JciMetro channel",
 
             importance: Importance.max,
             priority: Priority.high,

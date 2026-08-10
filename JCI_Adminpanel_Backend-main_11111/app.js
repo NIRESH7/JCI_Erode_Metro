@@ -79,6 +79,6 @@ setup(AppConfig)
     });
   })
   .catch((error) => {
-    console.log(JSON.stringify(error));
-    process.abort();
+    console.error(chalk.red(error?.message || String(error)));
+    process.exit(1);
   });

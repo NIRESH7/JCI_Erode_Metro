@@ -22,7 +22,7 @@
         android:name="com.google.android.gms.permission.AD_ID"
         tools:node="remove" />
     <application
-        android:label="JCI Erode GreenCity"
+        android:label="JCI Erode Metro"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
@@ -47,7 +47,7 @@
               />
             <meta-data
             android:name="com.google.firebase.messaging.default_notification_channel_id"
-            android:value="JCI GreenCity" />
+            android:value="JCI Metro" />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>

@@ -64,9 +64,9 @@ class _MemberLoginScreenState extends State<MemberLoginScreen> {
     final size = MediaQuery.sizeOf(context);
     final isTabletLandscape =
         size.shortestSide >= 600 && size.width > size.height;
-    final vPad = isTabletLandscape ? 12.0 : 28.0;
-    final logoGap = isTabletLandscape ? 12.0 : 28.0;
-    final sectionGap = isTabletLandscape ? 16.0 : 28.0;
+    final vPad = isTabletLandscape ? 12.0 : 20.0;
+    final logoGap = isTabletLandscape ? 10.0 : 16.0;
+    final sectionGap = isTabletLandscape ? 16.0 : 22.0;
 
     return Scaffold(
       backgroundColor: const Color(0xFFFAFBFC),

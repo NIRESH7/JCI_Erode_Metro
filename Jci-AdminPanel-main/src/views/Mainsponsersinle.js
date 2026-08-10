@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { BrowserRouter as Router, Link, useLocation } from "react-router-dom";
+import BackButton from "../components/BackButton";
 function Mainsponsersinle(props) {
     function useQuery() {
         return new URLSearchParams(useLocation().search);
@@ -17,6 +18,8 @@ function Mainsponsersinle(props) {
     }, []);
     return (
         <>
+            <div className="container-fluid p-3">
+                <BackButton to="/admin/Mainsponser" />
             <div>
                 <div className="row g-0">
                     <div className="col-md-4">
@@ -50,6 +53,7 @@ function Mainsponsersinle(props) {
                         </div>
                     </div>
                 </div>
+            </div>
             </div>
         </>
     );

@@ -3,111 +3,117 @@ import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { ToastContainer, toast } from "react-toastify";
 
+const API = process.env.REACT_APP_URL_ADMIN;
+
+function showResultToast(message) {
+  const text = typeof message === "string" ? message : "Something went wrong";
+  const failed = /fail|error|already exists/i.test(text);
+  if (failed) {
+    toast.error(text);
+  } else {
+    toast.success(text);
+  }
+  return !failed;
+}
+
 function CreateBussinessCategory() {
-  const [member_id, setMember_id] = useState("");
   const [Business_category, setBusiness_category] = useState("");
   const [business_categoryId, setBusiness_categoryId] = useState("");
   const [Business_subcategory, setBusiness_subcategory] = useState("");
   const [userlist, setUserlist] = useState([]);
-  const [role, setRole] = useState();
-
   const [loading, setLoading] = useState(false);
   const [isError, setIsError] = useState(false);
-  const [data, setData] = useState(null);
-  const [roles, setRoles] = useState([]);
 
-  console.log(userlist);
+  const loadCategories = () => {
+    axios
+      .get(API + "/jciadmin/getAllBusinessName")
+      .then((res) => {
+        const info = res.data?.response?.data?.info;
+        setUserlist(Array.isArray(info) ? info : []);
+      })
+      .catch(() => setUserlist([]));
+  };
 
   useEffect(() => {
-    axios
-      .get(process.env.REACT_APP_URL_ADMIN + "/jciadmin/getAllBusinessName")
-      .then((res) => {
-        setUserlist(res.data.response.data.info);
-      });
+    loadCategories();
   }, []);
+
   const handleCategorySubmit = (e) => {
     e.preventDefault();
+    const name = Business_category.trim();
+    if (!name) {
+      toast.error("Please enter a business category");
+      return;
+    }
     setLoading(true);
     setIsError(false);
-    const data = {
-      Business_name: Business_category,
-    };
     axios
-      .post(
-        process.env.REACT_APP_URL_ADMIN + "/jciadmin/addBusinessCategory",
-        data
-      )
+      .post(API + "/jciadmin/addBusinessCategory", { Business_name: name })
       .then((res) => {
-        setData(res.data);
-        setBusiness_category("");
-
-        toast.success(res.data.response.data.info);
+        const info = res.data?.response?.data?.info;
+        const ok = showResultToast(info);
+        if (ok) setBusiness_category("");
         setLoading(false);
-
-        axios
-          .get(process.env.REACT_APP_URL_ADMIN + "/jciadmin/getAllBusinessName")
-          .then((res) => {
-            setUserlist(res.data.response.data.info);
-          });
+        loadCategories();
       })
       .catch((err) => {
-        if (
-          err.response &&
-          err.response.data &&
-          err.response.data.error &&
-          typeof err.response.data.error.message === "string"
-        )
-          if (err.response.data.error.message === "Authentication Failed") {
-            localStorage.clear();
-            window.location.reload();
-          }
+        const msg =
+          err?.response?.data?.error?.message ||
+          "Business category creation failed!";
+        if (msg === "Authentication Failed") {
+          localStorage.clear();
+          window.location.reload();
+          return;
+        }
         setLoading(false);
         setIsError(true);
-        toast.error("Bussiness category creation failed!");
+        toast.error(msg);
       });
   };
-  console.log(business_categoryId);
+
   const handleSubCategorySubmit = (e) => {
     e.preventDefault();
+    if (!business_categoryId) {
+      toast.error("Please select a business category");
+      return;
+    }
+    const name = Business_subcategory.trim();
+    if (!name) {
+      toast.error("Please enter a business subcategory");
+      return;
+    }
     setLoading(true);
     setIsError(false);
-    const data = {
-      id: business_categoryId,
-      Business_name: Business_subcategory,
-    };
     axios
-      .post(
-        process.env.REACT_APP_URL_ADMIN + "/jciadmin/addBusinessSubCategory",
-        data
-      )
+      .post(API + "/jciadmin/addBusinessSubCategory", {
+        id: business_categoryId,
+        Business_name: name,
+      })
       .then((res) => {
-        setData(res.data);
-        setBusiness_subcategory("");
-
-        toast.success(res.data.response.data.info);
+        const info = res.data?.response?.data?.info;
+        const ok = showResultToast(info);
+        if (ok) setBusiness_subcategory("");
         setLoading(false);
+        loadCategories();
       })
       .catch((err) => {
-        if (
-          err.response &&
-          err.response.data &&
-          err.response.data.error &&
-          typeof err.response.data.error.message === "string"
-        )
-          if (err.response.data.error.message === "Authentication Failed") {
-            localStorage.clear();
-            window.location.reload();
-          }
+        const msg =
+          err?.response?.data?.error?.message ||
+          "Business subcategory creation failed!";
+        if (msg === "Authentication Failed") {
+          localStorage.clear();
+          window.location.reload();
+          return;
+        }
         setLoading(false);
         setIsError(true);
-        toast.error("Business subcategory creation failed!");
+        toast.error(msg);
       });
   };
-  const handleCategoryChange = (e) => {
-    setBusiness_categoryId(e.target.value);
-  };
+
   return (
     <div>
+      <ToastContainer />
       <form onSubmit={handleCategorySubmit}>
         <div className="container p-3 mb-5">
           <h5 className="d-inline-block mb-3">Create Business Category</h5>
@@ -116,15 +122,13 @@ function CreateBussinessCategory() {
               <input
                 type="text"
                 className="form-control"
-                id="name"
+                id="category-name"
                 placeholder="Enter Business Category"
                 value={Business_category}
                 onChange={(e) => setBusiness_category(e.target.value)}
-                required={true}
+                required
               />
             </div>
-
-            <ToastContainer />
 
             {isError && (
               <small className="mt-3 d-inline-block text-danger">
@@ -140,31 +144,31 @@ function CreateBussinessCategory() {
             </button>
           </div>
         </div>
-      </form>{" "}
+      </form>
       <form onSubmit={handleSubCategorySubmit}>
         <div className="container p-3 mt-5">
           <h5 className="d-inline-block mb-3">Create Business SubCategory</h5>
           <div style={{ maxWidth: 600 }}>
             <div className="input-group mb-3">
               <select
-                  value={business_categoryId}
-                  onChange={handleCategoryChange}
+                value={business_categoryId}
+                onChange={(e) => setBusiness_categoryId(e.target.value)}
                 className="form-select"
               >
                 <option value="" disabled>
                   Select Business Category
                 </option>
                 {userlist
-                  .filter((user) => user.parent_Id === 0)
+                  .filter((user) => Number(user.parent_Id) === 0)
                   .map((user) => (
                     <option
+                      key={user.id}
                       style={{ textTransform: "capitalize" }}
                       value={user.id}
                     >
-                      {user.Business_name.toLowerCase().replace(
-                        /\b\w/g,
-                        (char) => char.toUpperCase()
-                      )}
+                      {String(user.Business_name || "")
+                        .toLowerCase()
+                        .replace(/\b\w/g, (char) => char.toUpperCase())}
                     </option>
                   ))}
               </select>
@@ -173,21 +177,13 @@ function CreateBussinessCategory() {
               <input
                 type="text"
                 className="form-control"
-                id="name"
+                id="subcategory-name"
                 placeholder="Enter Business SubCategory"
                 value={Business_subcategory}
                 onChange={(e) => setBusiness_subcategory(e.target.value)}
-                required={true}
+                required
               />
             </div>
-
-            <ToastContainer />
-
-            {isError && (
-              <small className="mt-3 d-inline-block text-danger">
-                Something went wrong. Please try again later.
-              </small>
-            )}
             <button
               type="submit"
               className="btn btn-primary mt-3"

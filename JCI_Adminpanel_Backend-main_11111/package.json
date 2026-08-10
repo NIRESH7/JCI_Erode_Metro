@@ -9,9 +9,10 @@
         "node": "14.21.2x"
     },
     "scripts": {
-        "start": "nodemon app.js",
+        "start": "node app.js",
+        "dev": "nodemon app.js",
         "start:prod": "node app.js",
-        "deploy": "NODE_ENV=production pm2 start app.js --name \"JCI (4026)\" --max-memory-restart 2500M"
+        "deploy": "NODE_ENV=production pm2 start app.js --name \"JCI Metro (3029)\" --max-memory-restart 2500M"
     },
     "dependencies": {
         "ajv": "^8.5.0",

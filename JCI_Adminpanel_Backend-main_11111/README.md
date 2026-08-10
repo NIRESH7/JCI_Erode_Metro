@@ -1,9 +1,12 @@
-# JCI Erode Greencity — Backend API
+# JCI Erode Metro — Backend API
 
 Node.js API for mobile app and admin panel.
 
-- **API:** `https://api.jcierodegreencity.com`
-- **Port:** `4026` (behind nginx/apache reverse proxy)
+- **API:** `https://api.jcierodemetro.com`
+- **Admin:** `https://adminpanel.jcierodemetro.com`
+- **Site:** `https://jcierodemetro.com`
+- **Port:** `3029` (behind nginx/apache reverse proxy)
+- **DB:** `api_jcierodemetro` / user `jcierodemetro`
 
 ## Deploy
 
@@ -17,15 +20,19 @@ sql database/jci_production_live_setup.sql
 
 ### 2. Start API
 
+Use **one** env file only: `.env` (included in this repo)
+
 ```bash
-cp .env.production .env
 npm install
-npm run start:prod
+npm start
 ```
 
-Or with PM2: `pm2 start app.js --name jci-api`
+Or with PM2: `pm2 start app.js --name jci-metro-api`
+
+See `REPORT.md` for the full deploy checklist.
 
 ## Default admin (after SQL import)
 
 - Email: `admin@jci.local`
 - Password: `Admin@12345`
+"# JCI_Metro_Backend" 

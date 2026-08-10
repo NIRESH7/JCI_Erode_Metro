@@ -1,6 +1,6 @@
 # JCI Erode Metro
 
-Monorepo for JCI Erode GreenCity:
+Monorepo for **JCI Erode Metro**:
 
 | Folder | Description |
 |--------|-------------|

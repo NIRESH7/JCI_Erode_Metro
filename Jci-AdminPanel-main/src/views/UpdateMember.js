@@ -3,6 +3,7 @@ import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useLocation } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
+import BackButton from "../components/BackButton";
 
 function UpdateMember() {
   const [image, setImage] = useState();
@@ -150,6 +151,7 @@ function UpdateMember() {
 
   return (
     <div className="container p-3">
+      <BackButton to="/admin/Memberlist" />
       <h5 className="d-inline-block mb-3">UPDATE MEMBER</h5>
       <div style={{ maxWidth: 600 }}>
         <form onSubmit={handleSubmit}>

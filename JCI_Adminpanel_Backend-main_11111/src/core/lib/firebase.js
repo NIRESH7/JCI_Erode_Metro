@@ -1,17 +1,29 @@
 import admin from "firebase-admin";
 import moment from "moment";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 import { createRequire } from "module";
 import { DBController } from "../database/DbController.js";
 
-
 const require = createRequire(import.meta.url);
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const firebaseCredPath = path.resolve(__dirname, "../../../config/jci-firebase.json");
 
-const firebaseAdmin = admin.initializeApp({
-  credential: admin.credential.cert(
-    require("../../../config/jci-firebase.json")
-  ),
-});
-
+let firebaseAdmin = null;
+if (fs.existsSync(firebaseCredPath)) {
+  try {
+    firebaseAdmin = admin.initializeApp({
+      credential: admin.credential.cert(require(firebaseCredPath)),
+    });
+  } catch (err) {
+    console.warn("Firebase init failed (push notifications disabled):", err?.message || err);
+  }
+} else {
+  console.warn(
+    "config/jci-firebase.json not found — push notifications disabled for local run."
+  );
+}
 
 export const FirebaseService = {
   /**
@@ -23,6 +35,7 @@ export const FirebaseService = {
    */
 
   notify: async (topic, notification, data) => {
+    if (!firebaseAdmin) return null;
     try {
       const notified = await firebaseAdmin.messaging().send({
         notification: notification,
@@ -84,6 +97,7 @@ export const FirebaseService = {
   },
 
   notifyReferral: async ({ fcmToken, referral, referrerName, title, body }) => {
+    if (!firebaseAdmin) return null;
     try {
       if (!fcmToken) return null;
       const referralId = referral?.id || referral?.dataValues?.id;
@@ -119,6 +133,7 @@ export const FirebaseService = {
 
 
   notifyEventsThreeDaysBefore: async () => {
+    if (!firebaseAdmin) return null;
     try {
       const threeDaysBefore = moment().subtract(3, 'days').format("DD/MM/YYYY");
       const currentTime = moment().utcOffset(330);
@@ -170,6 +185,7 @@ export const FirebaseService = {
 
 
   notifyAllEventsBeforeADay: async () => {
+    if (!firebaseAdmin) return null;
     try {
       const tomorrowDate = moment()
         .utcOffset(330)
@@ -223,6 +239,7 @@ export const FirebaseService = {
   },
 
   notifyEventsTwoHrBefore: async () => {
+    if (!firebaseAdmin) return null;
     try {
       const todayDate = moment().utcOffset(330).clone().format("DD/MM/YYYY");
       const currentTime = moment(
@@ -314,6 +331,7 @@ export const FirebaseService = {
    */
 
   notifyOnTodayBirthdays: async () => {
+    if (!firebaseAdmin) return null;
     try {
       const todayDate = moment().utcOffset(330).clone().format("DD/MM");
       var foundMembers = await DBController.Member.Member.fetchMemberByDob(todayDate);
@@ -380,6 +398,7 @@ export const FirebaseService = {
   },
 
   notifyOnTomorrowBirthdays: async () => {
+    if (!firebaseAdmin) return null;
     try {
       const tomorrowDate = moment()
         .utcOffset(330)
@@ -437,4 +456,3 @@ export const FirebaseService = {
     }
   },
 };
-

@@ -29,7 +29,7 @@ export const MailerService = {
     await transport.sendMail({
       from: smtp_config.from,
       to,
-      subject: "JCI GreenCity — Reset your password",
+      subject: "JCI Erode Metro — Reset your password",
       html: `
         <p>Hi ${memberName || "Member"},</p>
         <p>Your password reset code: <strong>${resetToken}</strong></p>

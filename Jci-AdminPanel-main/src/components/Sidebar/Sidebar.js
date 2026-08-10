@@ -1,46 +1,43 @@
-
-import React, { Component } from "react";
+import React from "react";
 import { useLocation, NavLink } from "react-router-dom";
-
 import { Nav } from "react-bootstrap";
-
-import logo from "assets/img/reactlogo.png";
+import logo from "assets/img/jci-erode-metro-clear.png";
 
 function Sidebar({ color, image, routes }) {
   const location = useLocation();
   const activeRoute = (routeName) => {
-    ("rote-name", routeName, location.pathname===routeName ? "active" : "");
-    return location.pathname===routeName ?"active" : "";
+    return location.pathname === routeName ? "active" : "";
   };
+
   return (
     <div className="sidebar" data-image={image} data-color={color}>
       <div
         className="sidebar-background"
         style={{
-          backgroundImage: "url(" + image + ")",
+          backgroundImage: image ? "url(" + image + ")" : "none",
         }}
       />
       <div className="sidebar-wrapper">
         <div className="logo d-flex align-items-center justify-content-center">
           <a
-            href=""
+            href="#home"
             className="simple-text logo-mini mx-2 my-2"
+            onClick={(e) => e.preventDefault()}
           >
-            <div className="logo-img d-flex align-items-center " >
-             <img
-                src={require("assets/img/jci.png").default}
-                alt="jci"
-              style={{width:"100px"}}
+            <div className="logo-img d-flex align-items-center justify-content-center">
+              <img
+                src={logo}
+                alt="JCI Erode Metro"
+                style={{ width: "140px", height: "auto" }}
               />
             </div>
           </a>
-          <a className="simple-text" href="#">
-         
-          </a>
         </div>
         <Nav>
-          {routes.filter(data=>!data.sidebar_disable).map((prop, key) => {
-            if (!prop.redirect)
+          {routes
+            .filter((data) => !data.sidebar_disable)
+            .map((prop, key) => {
+              if (prop.redirect) return null;
               return (
                 <li
                   className={
@@ -63,8 +60,7 @@ function Sidebar({ color, image, routes }) {
                   </NavLink>
                 </li>
               );
-            return null;
-          })}
+            })}
         </Nav>
       </div>
     </div>

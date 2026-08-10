@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:jci/controllers/sponsorController.dart';
 import 'package:jci/services/homeService.dart';
+import 'package:jci/services/notification_service.dart';
 import 'package:jci/referral/services/referral_service.dart';
 import 'package:jci/referral/services/session_service.dart';
 import 'package:jci/utils/responsive.dart';
@@ -26,32 +27,60 @@ class _HomeState extends State<Home> {
 
   var isLoading = true;
   double _connectTotal = 0;
-  bool _routeWasCurrent = true;
   bool _refreshingConnectTotal = false;
-  Future<List<String>> _bannersFuture = HomeService.getPastEventImages();
+  int _unreadNotifications = 0;
+  List<String> _banners = [];
+  bool _bannersLoading = true;
+  bool _routeWasCurrent = true;
 
   @override
   void initState() {
     super.initState();
-
     getSponsorData();
     _loadConnectTotal();
+    _loadUnreadNotifications();
+    _loadBanners();
     SessionService.refreshProfile();
   }
 
-  void _loadBanners() {
-    setState(() {
-      _bannersFuture = HomeService.getPastEventImages();
-    });
+  Future<void> _loadBanners() async {
+    try {
+      final next = await HomeService.getPastEventImages();
+      if (!mounted) return;
+      setState(() {
+        _banners = next;
+        _bannersLoading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _bannersLoading = false);
+    }
+  }
+
+  Future<void> _loadUnreadNotifications() async {
+    try {
+      final count = await NotificationApiService.unreadCount();
+      if (mounted) setState(() => _unreadNotifications = count);
+    } catch (_) {}
+  }
+
+  Future<void> _openNotifications() async {
+    final loggedIn = await SessionService.isLoggedIn();
+    if (!loggedIn) {
+      Get.toNamed('/member-login');
+      return;
+    }
+    await Get.toNamed('/notifications');
+    if (mounted) _loadUnreadNotifications();
   }
 
   Future<void> _refreshHome() async {
-    _loadBanners();
     await Future.wait([
-      _bannersFuture.catchError((_) => <String>[]),
+      _loadBanners(),
       _loadConnectTotal(),
+      _loadUnreadNotifications(),
+      getSponsorData(),
     ]);
-    await getSponsorData();
   }
 
   Future<void> _loadConnectTotal() async {
@@ -60,8 +89,8 @@ class _HomeState extends State<Home> {
       _refreshingConnectTotal = true;
       final total = await ReferralApiService.getTotalConnectAmount();
       if (mounted) setState(() => _connectTotal = total);
-    } catch (_) {}
-    finally {
+    } catch (_) {
+    } finally {
       _refreshingConnectTotal = false;
     }
   }
@@ -83,224 +112,187 @@ class _HomeState extends State<Home> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final isCurrent = ModalRoute.of(context)?.isCurrent ?? true;
-    // Refresh home data when coming back to this screen.
+  void _onRouteVisibilityChanged(bool isCurrent) {
     if (isCurrent && !_routeWasCurrent) {
       _routeWasCurrent = true;
-      SessionService.refreshProfile();
-      _loadConnectTotal();
-      _loadBanners();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        SessionService.refreshProfile();
+        _loadConnectTotal();
+        _loadUnreadNotifications();
+        _loadBanners();
+      });
     } else if (!isCurrent && _routeWasCurrent) {
       _routeWasCurrent = false;
     }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isCurrent = ModalRoute.of(context)?.isCurrent ?? true;
+    if (isCurrent != _routeWasCurrent) {
+      _onRouteVisibilityChanged(isCurrent);
+    }
     return isLoading ? _loading() : _home(context);
+  }
+
+  Widget _bannerSection(double carouselHeight) {
+    if (_bannersLoading && _banners.isEmpty) {
+      return SizedBox(
+        height: carouselHeight,
+        child: const Center(child: CircularProgressIndicator()),
+      );
+    }
+    if (_banners.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    return CarouselSlider.builder(
+      itemCount: _banners.length,
+      itemBuilder: (BuildContext context, int itemIndex, int pageViewIndex) =>
+          GestureDetector(
+        onTap: () => Get.toNamed("/imgView", arguments: [_banners[itemIndex]]),
+        child: Container(
+          margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 0),
+          decoration: const BoxDecoration(
+            boxShadow: [
+              BoxShadow(color: Color(0xff1A000000), blurRadius: 4, offset: Offset(0, 0)),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: Image.network(
+              _banners[itemIndex],
+              fit: BoxFit.cover,
+              width: MediaQuery.of(context).size.width,
+              height: carouselHeight,
+              errorBuilder: (_, obj, err) => const SizedBox.shrink(),
+            ),
+          ),
+        ),
+      ),
+      options: CarouselOptions(
+        height: carouselHeight,
+        enlargeCenterPage: true,
+        initialPage: 0,
+        autoPlay: true,
+        autoPlayInterval: const Duration(seconds: 3),
+      ),
+    );
+  }
+
+  Widget _gridTap({required VoidCallback onTap, required Widget child}) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: child,
+    );
   }
 
   Scaffold _home(BuildContext context) {
     final carouselHeight = Responsive.carouselHeight(context);
     return Scaffold(
-      appBar: CustAppBar(Titles.home).initAppBar(),
+      backgroundColor: Colors.white,
+      appBar: CustAppBar(
+        Titles.home,
+        showNotificationBell: true,
+        unreadCount: _unreadNotifications,
+        onNotificationTap: _openNotifications,
+      ).initAppBar(),
       body: Responsive.body(
         context,
         RefreshIndicator(
-        onRefresh: _refreshHome,
-        child: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        scrollDirection: Axis.vertical,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            _space(5),
-            // event images
-            FutureBuilder<List<String>>(
-              future: _bannersFuture,
-              builder: (BuildContext context, AsyncSnapshot<List<String>> snapshot) {
-                if (snapshot.data == null && snapshot.connectionState == ConnectionState.waiting) {
-                  return SizedBox(
-                    height: carouselHeight,
-                    child: const Center(child: CircularProgressIndicator()),
-                  );
-                } else if (snapshot.connectionState == ConnectionState.done && snapshot.data == null) {
-                  return SizedBox.shrink();
-                } else {
-                  final banners = snapshot.data ?? [];
-                  return banners.isEmpty
-                      ? Container()
-                      : CarouselSlider.builder(
-                          itemCount: banners.length,
-                          itemBuilder: (BuildContext context, int itemIndex, int pageViewIndex) => GestureDetector(
-                            onTap: () => Get.toNamed("/imgView", arguments: [banners[itemIndex]]),
-                            child: Container(
-                              margin: EdgeInsets.symmetric(vertical: 10, horizontal: 0),
-                              decoration:
-                                  BoxDecoration(boxShadow: [BoxShadow(color: Color(0xff1A000000), blurRadius: 4, offset: Offset(0, 0))]),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(10),
-                                child: Image.network(
-                                  banners[itemIndex],
-                                  fit: BoxFit.cover,
-                                  width: MediaQuery.of(context).size.width,
-                                  height: carouselHeight,
-                                  errorBuilder: (_, obj, err) => Container(),
-                                ),
-                              ),
-                            ),
-                          ),
-                          options: CarouselOptions(
-                            height: carouselHeight,
-                            enlargeCenterPage: true,
-                            initialPage: 0,
-                            autoPlay: true,
-                            autoPlayInterval: Duration(seconds: 3),
-                          ),
-                        );
-                }
-              },
-            ),
-            _space(10),
-            // Event button
-            EventButton(),
-            _space(16),
-            _connectTotalCard(),
-            _space(16),
-            GridView(
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-                childAspectRatio: 1.4,
-              ),
+          onRefresh: _refreshHome,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            scrollDirection: Axis.vertical,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                InkWell(
-                  onTap: () => Get.toNamed("/about"),
-                  child: _homeGridItem(
-                    icon: SvgPicture.asset("assets/icons/about_colored.svg", width: 30, height: 30),
-                    label: "About",
+                _space(5),
+                _bannerSection(carouselHeight),
+                _space(10),
+                EventButton(),
+                _space(16),
+                _connectTotalCard(),
+                _space(16),
+                GridView(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3,
+                    childAspectRatio: 1.4,
                   ),
+                  children: [
+                    _gridTap(
+                      onTap: () => Get.toNamed("/about"),
+                      child: _homeGridItem(
+                        icon: SvgPicture.asset("assets/icons/about_colored.svg", width: 30, height: 30),
+                        label: "About",
+                      ),
+                    ),
+                    _gridTap(
+                      onTap: () => Get.toNamed("/members", arguments: ["mem"]),
+                      child: _homeGridItem(
+                        icon: SvgPicture.asset("assets/icons/board_members.svg", width: 30, height: 30),
+                        label: "Members",
+                      ),
+                    ),
+                    _gridTap(
+                      onTap: () => Get.toNamed("/dashboard"),
+                      child: _homeGridItem(
+                        icon: SvgPicture.asset("assets/icons/dashboard.svg", width: 30, height: 30),
+                        label: "Green Channel",
+                      ),
+                    ),
+                    _gridTap(
+                      onTap: () => Get.toNamed("/roh"),
+                      child: _homeGridItem(
+                        icon: SvgPicture.asset("assets/icons/roll_of_honour_colored.svg", width: 30, height: 30),
+                        label: "Roll of honour",
+                      ),
+                    ),
+                    _gridTap(
+                      onTap: () => Get.toNamed("/birthday"),
+                      child: _homeGridItem(
+                        icon: SvgPicture.asset("assets/icons/birthday_colored.svg", width: 30, height: 30),
+                        label: "Birthday",
+                      ),
+                    ),
+                    _gridTap(
+                      onTap: () => Get.toNamed("/blood"),
+                      child: _homeGridItem(
+                        icon: SvgPicture.asset("assets/icons/blood_colored.svg", width: 30, height: 30),
+                        label: "Blood Donors",
+                      ),
+                    ),
+                    _gridTap(
+                      onTap: () => Get.toNamed("/referral"),
+                      child: _homeGridItem(
+                        icon: SvgPicture.asset("assets/icons/members_colored.svg", width: 30, height: 30),
+                        label: "Referrals",
+                      ),
+                    ),
+                    _gridTap(
+                      onTap: () => Get.toNamed("/fitness-club"),
+                      child: _homeGridItem(
+                        icon: Icon(Icons.favorite_border, size: 30, color: Color(0xFF24356F)),
+                        label: "Fitness Club",
+                      ),
+                    ),
+                  ],
                 ),
-                InkWell(
-                  onTap: () {
-                    Get.back();
-                    Get.toNamed("/members", arguments: ["bm"]);
-                  },
-                  child: _homeGridItem(
-                    icon: SvgPicture.asset("assets/icons/board_members.svg", width: 30, height: 30),
-                    label: "Members",
-                  ),
+                _space(10),
+                Visibility(
+                  visible: controller.getMainSponsorVisiblity(),
+                  child: SponsorData.sponserTitle("${JciString.powered_by}"),
                 ),
-                InkWell(
-                  onTap: () {
-                    Get.back();
-                    Get.toNamed("/dashboard");
-                  },
-                  child: _homeGridItem(
-                    icon: SvgPicture.asset("assets/icons/dashboard.svg", width: 30, height: 30),
-                    label: "Green Channel",
-                  ),
-                ),
-                // InkWell(
-                //   onTap: () {
-                //     Get.back();
-                //     Get.toNamed("/members", arguments: ['mem']);
-                //   },
-                //   child: Container(
-                //     child: Column(
-                //       children: [
-                //         SvgPicture.asset("assets/icons/members_colored.svg",
-                //             width: 30, height: 30),
-                //         _space(10),
-                //         _title("Members")
-                //       ],
-                //     ),
-                //   ),
-                // ),
-                InkWell(
-                  onTap: () => Get.toNamed("/roh"),
-                  child: _homeGridItem(
-                    icon: SvgPicture.asset("assets/icons/roll_of_honour_colored.svg", width: 30, height: 30),
-                    label: "Roll of honour",
-                  ),
-                ),
-                InkWell(
-                  onTap: () => Get.toNamed("/birthday"),
-                  child: _homeGridItem(
-                    icon: SvgPicture.asset("assets/icons/birthday_colored.svg", width: 30, height: 30),
-                    label: "Birthday",
-                  ),
-                ),
-                InkWell(
-                  onTap: () => Get.toNamed("/blood"),
-                  child: _homeGridItem(
-                    icon: SvgPicture.asset("assets/icons/blood_colored.svg", width: 30, height: 30),
-                    label: "Blood Donors",
-                  ),
-                ),
-                InkWell(
-                  onTap: () => Get.toNamed("/referral"),
-                  child: _homeGridItem(
-                    icon: SvgPicture.asset("assets/icons/members_colored.svg", width: 30, height: 30),
-                    label: "Referrals",
-                  ),
-                ),
-                InkWell(
-                  onTap: () => Get.toNamed("/fitness-club"),
-                  child: _homeGridItem(
-                    icon: SvgPicture.asset("assets/icons/heart.svg", width: 30, height: 30),
-                    label: "Fitness Club",
-                  ),
-                ),
-                //     InkWell(
-                //       onTap: () => Get.toNamed("blood-request-list"),
-                //       child: Container(
-                //         child: Column(
-                //           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                //           crossAxisAlignment: CrossAxisAlignment.stretch,
-                //           children: [
-                //             SvgPicture.asset(
-                //               "assets/icons/blood_colored.svg",
-                //               width: 30,
-                //               height: 30,
-                //             ),
-                //             _title("Create Blood Request")
-                //           ],
-                //         ),
-                //       ),
-                //     ),
-                //     InkWell(
-                //       onTap: () => Get.toNamed("blood-request-list"),
-                //       child: Container(
-                //         child: Column(
-                //           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                //           crossAxisAlignment: CrossAxisAlignment.stretch,
-                //           children: [
-                //             SvgPicture.asset(
-                //               "assets/icons/blood_colored.svg",
-                //               width: 30,
-                //               height: 30,
-                //             ),
-                //             _title("Blood Request List")
-                //           ],
-                //         ),
-                //       ),
-                //     )
+                _space(10),
+                SponsorData.mainSponsor(context),
+                _space(20),
               ],
             ),
-            _space(10),
-            Visibility(visible: controller.getMainSponsorVisiblity(), child: SponsorData.sponserTitle("${JciString.powered_by}")),
-            _space(10),
-            SponsorData.mainSponsor(context),
-            // _space(10),
-            // Visibility(
-            //     visible: controller.getVisible(),
-            //     child: SponsorData.sponserTitle('${JciString.co_powered_by}')),
-            // SponsorData.otherSponsor(context),
-            _space(20)
-          ],
+          ),
         ),
-      ),
-      ),
       ),
       drawer: MyDrawer(),
     );
@@ -318,13 +310,14 @@ class _HomeState extends State<Home> {
 
   Widget _homeGridItem({required Widget icon, required String label}) {
     return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         SizedBox(
           width: 32,
           height: 32,
           child: Center(child: icon),
         ),
-        _space(10),
+        _space(8),
         _title(label),
       ],
     );

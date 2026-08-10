@@ -1,5 +1,6 @@
 import { DBController } from "../../database/DbController.js";
 import { NotValid } from "../../errors/ErrorConstant.js";
+import { resolvePublicMediaUrl } from "../../utils/mediaUrl.js";
 
 export class FitnessControl {}
 
@@ -30,13 +31,13 @@ FitnessControl.Story = {
         byMember.set(key, {
           member_id: plain.member_id,
           member_name: member?.user_name || "Member",
-          profile_pic: member?.profile_pic || null,
+          profile_pic: resolvePublicMediaUrl(member?.profile_pic || null),
           stories: [],
         });
       }
       byMember.get(key).stories.push({
         id: plain.id,
-        image_url: plain.image_path,
+        image_url: resolvePublicMediaUrl(plain.image_path),
         created_at: plain.createdAt,
         expires_at: plain.expires_at,
       });

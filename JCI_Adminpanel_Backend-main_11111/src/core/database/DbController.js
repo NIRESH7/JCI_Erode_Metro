@@ -1056,6 +1056,7 @@ DBController.Member = {
       try {
         return await DBController.Models.BusinessType.create({
           Business_name: data.Business_name,
+          parent_Id: 0,
         });
       } catch (error) {
         console.log(error);
@@ -1067,11 +1068,7 @@ DBController.Member = {
         return await DBController.Models.BusinessType.create({
           Business_name: data.Business_name,
           parent_Id: id,
-          where: {
-            id: data.id,
-          },
-        },
-        );
+        });
       } catch (error) {
         console.log(error);
         return null;
@@ -1353,6 +1350,45 @@ DBController.Referral = {
       },
     });
     return result || 0;
+  },
+};
+
+DBController.MemberNotification = {
+  create: async (data) => {
+    return await DBController.Models.MemberNotification.create(data);
+  },
+  findForMember: async (memberId, { limit = 50 } = {}) => {
+    return await DBController.Models.MemberNotification.findAll({
+      where: { member_id: memberId },
+      order: [["createdAt", "DESC"]],
+      limit,
+    });
+  },
+  unreadCount: async (memberId) => {
+    return await DBController.Models.MemberNotification.count({
+      where: { member_id: memberId, is_read: false },
+    });
+  },
+  markRead: async (memberId, ids) => {
+    const where = { member_id: memberId, is_read: false };
+    if (Array.isArray(ids) && ids.length > 0) {
+      where.id = { [Op.in]: ids };
+    }
+    await DBController.Models.MemberNotification.update(
+      { is_read: true },
+      { where }
+    );
+    return true;
+  },
+  existsForReferralType: async (memberId, referralId, type) => {
+    const row = await DBController.Models.MemberNotification.findOne({
+      where: {
+        member_id: memberId,
+        referral_id: referralId,
+        type,
+      },
+    });
+    return !!row;
   },
 };
 

@@ -4,6 +4,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { BrowserRouter as Router, Link, useLocation } from "react-router-dom";
 import { isJsxFragment } from "typescript";
 import { toast } from "react-toastify";
+import BackButton from "../components/BackButton";
 function SingleMember(props) {
   function useQuery() {
     return new URLSearchParams(useLocation().search);
@@ -97,6 +98,9 @@ function SingleMember(props) {
   };
   return (
     <>
+      <div className="container-fluid p-3">
+        <BackButton to="/admin/Memberlist" />
+      </div>
       {" "}
       <div>
         <nav>

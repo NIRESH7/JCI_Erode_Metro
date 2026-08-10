@@ -9,7 +9,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:706439036840:android:ed3352a4b42447f5d4a79d",
         "android_client_info": {
-          "package_name": "com.nutz.jci"
+          "package_name": "com.nutz.jci.metro"
         }
       },
       "oauth_client": [
@@ -17,7 +17,7 @@
           "client_id": "295856421490-f2k05ft6c7gqs7eh2dlhk5mfcg03lrbo.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.nutz.jci",
+            "package_name": "com.nutz.jci.metro",
             "certificate_hash": "2e0d5f6de282327575f281a6188924900a0b5bd1d"
           }
         }

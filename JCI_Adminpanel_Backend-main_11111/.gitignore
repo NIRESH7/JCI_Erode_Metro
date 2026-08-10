@@ -1,11 +1,30 @@
-node_modules
-yarn-error.log
-.sequelizerc
-Archive.zip
+# Dependencies
+node_modules/
+
+# Do not commit example env — use .env only
+.env.example
+.env.local
+.env.*.local
+
+# Logs
+*.log
+logs/
+*.err.log
+*.out.log
+
+# OS / IDE
 .DS_Store
-package-lock.json
-.env
-.env.*
-!.env.example
-!.env.production.example
-!.env.production
+Thumbs.db
+.idea/
+.vscode/
+*.iml
+
+# Archives / junk
+*.zip
+Archive.zip
+.sequelizerc
+
+# Runtime / uploads cache
+uploads/temp/
+tmp/
+.cache/

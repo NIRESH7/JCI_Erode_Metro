@@ -2,6 +2,7 @@ import { MemberControl } from "../../core/inc/controls/MemberControl.js";
 import { MemberAuthControl } from "../../core/inc/controls/MemberAuthControl.js";
 import { ReferralControl } from "../../core/inc/controls/ReferralControl.js";
 import { FitnessControl } from "../../core/inc/controls/FitnessControl.js";
+import { NotificationControl } from "../../core/inc/controls/NotificationControl.js";
 import { ApplicationResult } from "../../core/result.js";
 import { ApplicationResponse } from "../../core/inc/response/ApplicationResponse.js";
 
@@ -472,5 +473,25 @@ MemberController.Fitness = {
       FitnessControl.Story.deleteOwn({ storyId: parseInt(req.params.id, 10), memberId: req.memberId }),
       res,
       "FitnessStoryDelete"
+    ),
+};
+MemberController.Notification = {
+  list: (req, res) =>
+    handlePromise(
+      NotificationControl.Member.list({ memberId: req.memberId }),
+      res,
+      "Notifications"
+    ),
+  unreadCount: (req, res) =>
+    handlePromise(
+      NotificationControl.Member.unreadCount({ memberId: req.memberId }),
+      res,
+      "UnreadCount"
+    ),
+  markRead: (req, res) =>
+    handlePromise(
+      NotificationControl.Member.markRead({ memberId: req.memberId, body: req.body }),
+      res,
+      "MarkRead"
     ),
 };

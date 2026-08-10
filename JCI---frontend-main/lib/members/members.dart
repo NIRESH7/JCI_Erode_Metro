@@ -24,7 +24,15 @@ class Members extends StatefulWidget {
 
 class _MembersState extends State<Members> with SingleTickerProviderStateMixin {
   var appBarTitle = "Members";
-  List<String> id = Get.arguments;
+
+  /// Route args: `["bm"]` → Board Members tab, `["mem"]` → Members tab.
+  int get _initialTabIndex {
+    final args = Get.arguments;
+    if (args is List && args.isNotEmpty && '${args[0]}' == 'mem') {
+      return 1;
+    }
+    return 0;
+  }
 
   TabController? _tabController;
   final ScrollController _boardScrollController = ScrollController();
@@ -50,7 +58,11 @@ class _MembersState extends State<Members> with SingleTickerProviderStateMixin {
 
   void _ensureTabController() {
     if (_tabController != null) return;
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(
+      length: 2,
+      vsync: this,
+      initialIndex: _initialTabIndex,
+    );
     _tabController!.addListener(_updateScrollDownButtonVisibility);
   }
 

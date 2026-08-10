@@ -1,9 +1,11 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 import srxc from "../assets/img/propic.png";
 import { Tab, Tabs } from "react-bootstrap";
 import { ToastContainer, toast } from "react-toastify";
+import ListToolbar, { matchesSearch } from "../components/ListToolbar";
+import ListPagination, { paginate } from "../components/ListPagination";
 
 const styles = {
   page: {
@@ -11,9 +13,10 @@ const styles = {
   },
   card: {
     background: "#fff",
-    borderRadius: 8,
-    border: "1px solid #E5E7EB",
+    borderRadius: 14,
+    border: "1px solid #E6EBF2",
     overflow: "hidden",
+    boxShadow: "0 8px 24px rgba(15, 23, 42, 0.04)",
   },
   tableWrap: {
     overflowX: "auto",
@@ -24,23 +27,23 @@ const styles = {
     borderCollapse: "collapse",
   },
   th: {
-    background: "#F9FAFB",
-    color: "#374151",
-    fontSize: 12,
-    fontWeight: 600,
-    letterSpacing: "0.02em",
+    background: "#F8FAFC",
+    color: "#64748B",
+    fontSize: 11,
+    fontWeight: 700,
+    letterSpacing: "0.04em",
     textTransform: "uppercase",
     padding: "12px 14px",
     whiteSpace: "nowrap",
-    borderBottom: "1px solid #E5E7EB",
+    borderBottom: "1px solid #E6EBF2",
     verticalAlign: "middle",
   },
   td: {
     padding: "12px 14px",
     verticalAlign: "middle",
-    borderBottom: "1px solid #F3F4F6",
+    borderBottom: "1px solid #EEF2F7",
     fontSize: 13,
-    color: "#111827",
+    color: "#1E293B",
   },
   avatar: {
     width: 40,
@@ -52,18 +55,18 @@ const styles = {
   },
   name: {
     fontWeight: 600,
-    color: "#111827",
+    color: "#0F172A",
     textTransform: "capitalize",
     margin: 0,
   },
   muted: {
-    color: "#9CA3AF",
+    color: "#94A3B8",
     fontSize: 12,
   },
   actions: {
     display: "flex",
     gap: 6,
-    flexWrap: "wrap",
+    flexWrap: "nowrap",
     alignItems: "center",
   },
   btnBase: {
@@ -72,73 +75,78 @@ const styles = {
     justifyContent: "center",
     border: "none",
     borderRadius: 6,
-    padding: "6px 12px",
-    fontSize: 12,
+    padding: "0 8px",
+    minHeight: 26,
+    minWidth: 0,
+    fontSize: 11,
     fontWeight: 600,
     cursor: "pointer",
     whiteSpace: "nowrap",
   },
   btnView: {
-    background: "#E8F4FD",
-    color: "#1D6FB8",
+    background: "#E0F2FE",
+    color: "#0369A1",
   },
   btnUpdate: {
-    background: "#FFF4E5",
-    color: "#C77700",
+    background: "#FFF7ED",
+    color: "#C2410C",
   },
   btnGiveAccess: {
-    background: "#E8F8EF",
-    color: "#1B7A3D",
+    background: "#ECFDF5",
+    color: "#047857",
   },
   btnRevokeAccess: {
-    background: "#FDECEC",
-    color: "#C62828",
+    background: "#FEF2F2",
+    color: "#B91C1C",
   },
   btnInactive: {
-    background: "#FDECEC",
-    color: "#C62828",
+    background: "#FEF2F2",
+    color: "#B91C1C",
   },
   btnActive: {
-    background: "#E8F8EF",
-    color: "#1B7A3D",
+    background: "#ECFDF5",
+    color: "#047857",
   },
   accessWrap: {
     display: "flex",
-    flexDirection: "column",
+    flexDirection: "row",
+    flexWrap: "nowrap",
     gap: 6,
-    alignItems: "flex-start",
-    minWidth: 120,
+    alignItems: "center",
   },
   pillFull: {
     display: "inline-flex",
     alignItems: "center",
-    borderRadius: 999,
-    padding: "3px 10px",
-    fontSize: 11,
+    justifyContent: "center",
+    borderRadius: 6,
+    padding: "0 8px",
+    minHeight: 26,
+    minWidth: 0,
+    fontSize: 10,
     fontWeight: 700,
     background: "#D1FAE5",
     color: "#065F46",
+    whiteSpace: "nowrap",
   },
   pillView: {
     display: "inline-flex",
     alignItems: "center",
-    borderRadius: 999,
-    padding: "3px 10px",
-    fontSize: 11,
+    justifyContent: "center",
+    borderRadius: 6,
+    padding: "0 8px",
+    minHeight: 26,
+    minWidth: 0,
+    fontSize: 10,
     fontWeight: 700,
-    background: "#F3F4F6",
-    color: "#4B5563",
+    background: "#F1F5F9",
+    color: "#475569",
+    whiteSpace: "nowrap",
   },
   empty: {
     textAlign: "center",
     padding: "36px 16px",
-    color: "#6B7280",
+    color: "#64748B",
     fontSize: 13,
-  },
-  count: {
-    fontSize: 12,
-    color: "#6B7280",
-    marginBottom: 8,
   },
 };
 
@@ -147,6 +155,50 @@ function Memberlist(props) {
   const [inactive, setInactive] = useState([]);
   const [loadingId, setLoadingId] = useState(null);
   const [accessLoadingId, setAccessLoadingId] = useState(null);
+  const [search, setSearch] = useState("");
+  const [activePage, setActivePage] = useState(1);
+  const [inactivePage, setInactivePage] = useState(1);
+
+  const memberFields = [
+    "user_name",
+    "email",
+    "contact",
+    "location",
+    "role",
+    "id",
+  ];
+
+  const filteredActive = useMemo(
+    () => userList.filter((m) => matchesSearch(m, search, memberFields)),
+    [userList, search]
+  );
+  const filteredInactive = useMemo(
+    () => inactive.filter((m) => matchesSearch(m, search, memberFields)),
+    [inactive, search]
+  );
+
+  const activePaged = useMemo(
+    () => paginate(filteredActive, activePage),
+    [filteredActive, activePage]
+  );
+  const inactivePaged = useMemo(
+    () => paginate(filteredInactive, inactivePage),
+    [filteredInactive, inactivePage]
+  );
+
+  useEffect(() => {
+    if (activePage !== activePaged.page) setActivePage(activePaged.page);
+  }, [activePage, activePaged.page]);
+
+  useEffect(() => {
+    if (inactivePage !== inactivePaged.page) setInactivePage(inactivePaged.page);
+  }, [inactivePage, inactivePaged.page]);
+
+  const onSearchChange = (value) => {
+    setSearch(value);
+    setActivePage(1);
+    setInactivePage(1);
+  };
 
   const loadMembers = useCallback(() => {
     axios
@@ -235,6 +287,7 @@ function Memberlist(props) {
         type="button"
         style={{
           ...styles.btnBase,
+          minWidth: 88,
           ...(isActiveTab ? styles.btnInactive : styles.btnActive),
           opacity: busy ? 0.6 : 1,
         }}
@@ -258,6 +311,7 @@ function Memberlist(props) {
           type="button"
           style={{
             ...styles.btnBase,
+            minWidth: 96,
             ...(hasFull ? styles.btnRevokeAccess : styles.btnGiveAccess),
             opacity: busy ? 0.6 : 1,
           }}
@@ -283,7 +337,7 @@ function Memberlist(props) {
             />
           </td>
           <td style={styles.td}>
-            <span style={{ color: "#6B7280" }}>#{x.id}</span>
+            <span style={{ color: "#64748B" }}>#{x.id}</span>
           </td>
           <td style={styles.td}>
             <p style={styles.name}>{x.user_name || "—"}</p>
@@ -296,7 +350,7 @@ function Memberlist(props) {
           <td style={{ ...styles.td, textTransform: "capitalize" }}>
             {x.role || <span style={styles.muted}>—</span>}
           </td>
-          <td style={styles.td}>
+          <td style={{ ...styles.td, whiteSpace: "nowrap" }}>
             <div style={styles.actions}>
               <button
                 type="button"
@@ -314,26 +368,24 @@ function Memberlist(props) {
               </button>
             </div>
           </td>
-          <td style={styles.td}>{renderAccessCell(x)}</td>
-          <td style={styles.td}>{renderStatusButton(x, isActiveTab)}</td>
+          <td style={{ ...styles.td, whiteSpace: "nowrap" }}>
+            {renderAccessCell(x)}
+          </td>
+          <td style={{ ...styles.td, whiteSpace: "nowrap" }}>
+            {renderStatusButton(x, isActiveTab)}
+          </td>
         </tr>
       ))
     ) : (
       <tr>
         <td colSpan="10" style={styles.empty}>
-          No members found
+          {search ? "No members match your search" : "No members found"}
         </td>
       </tr>
     );
 
-  const renderTable = (list, isActiveTab) => (
+  const renderTable = (paged, isActiveTab, onPageChange) => (
     <div style={styles.card}>
-      <div style={{ padding: "10px 14px 0" }}>
-        <div style={styles.count}>
-          {Array.isArray(list) ? list.length : 0} member
-          {(Array.isArray(list) ? list.length : 0) === 1 ? "" : "s"}
-        </div>
-      </div>
       <div style={styles.tableWrap}>
         <table style={styles.table} className="table mb-0">
           <thead>
@@ -350,9 +402,15 @@ function Memberlist(props) {
               <th style={styles.th}>Status</th>
             </tr>
           </thead>
-          <tbody>{renderRows(list, isActiveTab)}</tbody>
+          <tbody>{renderRows(paged.slice, isActiveTab)}</tbody>
         </table>
       </div>
+      <ListPagination
+        page={paged.page}
+        totalPages={paged.totalPages}
+        total={paged.total}
+        onPageChange={onPageChange}
+      />
     </div>
   );
 
@@ -383,13 +441,20 @@ function Memberlist(props) {
           border-color: transparent;
         }
       `}</style>
+      <ListToolbar
+        search={search}
+        onSearchChange={onSearchChange}
+        placeholder="Search members by name, email, phone, location…"
+        count={filteredActive.length + filteredInactive.length}
+        countLabel="members"
+      />
       <div className="member-list-tabs">
         <Tabs defaultActiveKey="home" id="member-list-tabs">
-          <Tab eventKey="home" title="Active Members">
-            {renderTable(userList, true)}
+          <Tab eventKey="home" title={`Active (${filteredActive.length})`}>
+            {renderTable(activePaged, true, setActivePage)}
           </Tab>
-          <Tab eventKey="profile" title="Inactive Members">
-            {renderTable(inactive, false)}
+          <Tab eventKey="profile" title={`Inactive (${filteredInactive.length})`}>
+            {renderTable(inactivePaged, false, setInactivePage)}
           </Tab>
         </Tabs>
       </div>

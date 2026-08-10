@@ -21,21 +21,45 @@ class ApiConfig {
     final trimmed = url.trim();
     if (trimmed.contains('placeholder.jpg')) return '';
 
+    final base = Uri.parse(baseUrl);
+
     if (trimmed.startsWith('http')) {
       final uri = Uri.tryParse(trimmed);
-      if (uri != null && uri.host.isNotEmpty && _shouldRewriteHost(uri.host)) {
-        final base = Uri.parse(baseUrl);
-        return '${base.scheme}://${base.host}:${base.hasPort ? base.port : 3002}${uri.path}';
+      if (uri == null || uri.host.isEmpty) return trimmed;
+
+      // Already points at the configured API host — keep as-is (do not force :3002).
+      if (_sameApiHost(uri, base)) {
+        return trimmed;
+      }
+
+      // Rewrite localhost / LAN / old deploy hosts onto the current API base.
+      if (_shouldRewriteHost(uri.host)) {
+        return _joinBasePath(base, uri.path);
       }
       return trimmed;
     }
 
-    return '$baseUrl$trimmed';
+    final path = trimmed.startsWith('/') ? trimmed : '/$trimmed';
+    return _joinBasePath(base, path);
+  }
+
+  static String _joinBasePath(Uri base, String path) {
+    final normalized = path.startsWith('/') ? path : '/$path';
+    if (base.hasPort) {
+      return '${base.scheme}://${base.host}:${base.port}$normalized';
+    }
+    return '${base.scheme}://${base.host}$normalized';
+  }
+
+  static bool _sameApiHost(Uri media, Uri base) {
+    return media.host.toLowerCase() == base.host.toLowerCase();
   }
 
   static bool _shouldRewriteHost(String host) {
-    if (host == 'localhost' || host == '127.0.0.1') return true;
-    if (host.startsWith('192.168.') || host.startsWith('10.')) return true;
+    final h = host.toLowerCase();
+    if (h == 'localhost' || h == '127.0.0.1') return true;
+    if (h.startsWith('192.168.') || h.startsWith('10.')) return true;
+    if (h.contains('jcierodemetro') || h.contains('jcierodegreencity')) return true;
     return false;
   }
 }

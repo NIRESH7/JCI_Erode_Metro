@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -97,8 +96,7 @@ class _FitnessClubPageState extends State<FitnessClubPage> {
 
     setState(() => _uploading = true);
     try {
-      final files = picked.map((x) => File(x.path)).toList();
-      final count = await FitnessStoryService.uploadStories(files);
+      final count = await FitnessStoryService.uploadStoriesFromXFiles(picked);
       _snack(count == 1 ? 'Story uploaded!' : '$count stories uploaded!');
       await _load();
     } catch (e) {

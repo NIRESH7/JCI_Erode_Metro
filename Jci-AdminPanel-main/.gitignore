@@ -1,6 +1,28 @@
-node_modules
-build
+# Dependencies / build
+node_modules/
+build/
 build.zip
+dist/
+
+# Secrets — only .env.example is committed
 .env
 .env.local
+.env.development.local
+.env.test.local
 .env.production.local
+
+# Logs / cache
+*.log
+.eslintcache
+npm-debug.log*
+yarn-error.log
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.iml
+
+# Archives
+*.zip

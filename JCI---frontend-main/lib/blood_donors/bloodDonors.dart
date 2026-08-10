@@ -342,7 +342,7 @@ class _BloodRequestCardState extends State<BloodRequestCard> {
         'Created At: ${info.createdAt}\n'
         'Verified By: ${info.verifiedBy}\n\n'
         'Share this request with your friends and family to help the patient in need.\n\n'
-        'Powered by JCI Erode Greencity';
+        'Powered by JCI Erode Metro';
 
     final boundary = _repaintKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
     final image = await boundary.toImage(pixelRatio: 3.0);

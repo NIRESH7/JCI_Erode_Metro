@@ -300,7 +300,7 @@ BusinessType.init({
     defaultValue: 0
 
   },
-}, { sequelize: connection, freezeTableName: true });
+}, { sequelize: connection, freezeTableName: true, tableName: "businesstype" });
 
 
 class notification extends Model { }

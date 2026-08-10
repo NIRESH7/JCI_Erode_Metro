@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// JCI Erode Greencity branding logo.
+/// JCI Erode Metro branding logo.
 class JciLogo extends StatelessWidget {
   const JciLogo({
     super.key,
@@ -19,32 +19,32 @@ class JciLogo extends StatelessWidget {
   /// Keeps the logo proportional on phones, tablets, and foldables.
   static double responsiveWidth(
     BuildContext context, {
-    double factor = 0.72,
-    double min = 220,
-    double max = 320,
+    double factor = 0.42,
+    double min = 140,
+    double max = 200,
   }) {
     final shortest = MediaQuery.sizeOf(context).shortestSide;
     return (shortest * factor).clamp(min, max);
   }
 
-  /// Flutter splash — largest hero logo (width only; height follows aspect ratio).
+  /// Flutter splash — hero logo (kept moderate so it does not dominate).
   static double splashWidth(BuildContext context) {
     final width = MediaQuery.sizeOf(context).width;
-    return (width * 0.92).clamp(300.0, 780.0);
+    return (width * 0.55).clamp(180.0, 280.0);
   }
 
-  /// Login hero logo — phones unchanged; smaller on tablets so the form fits.
+  /// Login hero logo — compact so the form stays above the fold.
   static double loginWidth(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
 
     if (size.shortestSide < 600) {
-      return (size.width * 0.72).clamp(280.0, 480.0);
+      return (size.width * 0.42).clamp(140.0, 180.0);
     }
 
     const aspect = 380 / 170;
-    final byWidth = size.width * 0.42;
-    final maxByHeight = size.height * 0.14 * aspect;
-    return byWidth.clamp(260.0, 320.0).clamp(0.0, maxByHeight);
+    final byWidth = size.width * 0.28;
+    final maxByHeight = size.height * 0.10 * aspect;
+    return byWidth.clamp(160.0, 200.0).clamp(0.0, maxByHeight);
   }
 
   @override

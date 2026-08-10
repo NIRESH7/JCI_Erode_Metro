@@ -1,13 +1,42 @@
+# Flutter / Dart
 .dart_tool/
+.packages
+.pub-cache/
+.pub/
 build/
-.idea/
-.DS_Store
-__pycache__
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# Secrets
 .env
 .env.*
 !.env.example
 !.env.production.example
+
+# Android signing (never commit)
 *.jks
 *.keystore
 upload_certificate.pem
 android/key.properties
+android/local.properties
+
+# iOS
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/ServiceDefinitions.json
+ios/Runner/GeneratedPluginRegistrant.*
+
+# IDE / OS
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+__pycache__/
+
+# Misc junk
+*.zip
+Untitled
+*.log

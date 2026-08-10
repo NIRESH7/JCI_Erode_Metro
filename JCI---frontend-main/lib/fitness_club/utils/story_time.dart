@@ -15,6 +15,16 @@ class StoryTime {
     return 'Posted $agoText';
   }
 
+  static String expiresLabel(DateTime? dateTime) {
+    if (dateTime == null) return '';
+    final dt = dateTime.toLocal();
+    final remaining = dt.difference(DateTime.now());
+    if (remaining.isNegative) return 'Expired';
+    if (remaining.inMinutes < 60) return 'Expires in ${remaining.inMinutes}m';
+    if (remaining.inHours < 24) return 'Expires in ${remaining.inHours}h';
+    return 'Expires in ${remaining.inDays}d';
+  }
+
   static String listTime(DateTime? dateTime) {
     if (dateTime == null) return '';
     final dt = dateTime.toLocal();

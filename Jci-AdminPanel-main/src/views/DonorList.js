@@ -1,82 +1,121 @@
-import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import moment from "moment";
+import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
-import srxc from "../assets/img/propic.png";
+import ListToolbar, { matchesSearch } from "../components/ListToolbar";
+import ListPagination, { paginate } from "../components/ListPagination";
 
-function DonorList(props) {
+function DonorList() {
   const [donor, setDonor] = useState([]);
-  const [render, setRender] = useState(true);
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     axios
       .get(process.env.REACT_APP_URL_ADMIN + "/jciadmin/listRequest")
       .then((res) => {
-        setDonor(res.data.response.data.info);
-      });
-  }, [render]);
-  const Verify = (id, val) => {
-    axios
-      .post(process.env.REACT_APP_URL_ADMIN + "/jciadmin/verifyBloodRequest", {
-        status: val === "active" ? "inactive" : "active",
-        id: id,
+        setDonor(res.data.response.data.info || []);
       })
-      .then((res) => {
-        axios
-          .get(process.env.REACT_APP_URL_ADMIN + "/jciadmin/listRequest")
-          .then((res) => {
-            setDonor(res.data.response.data.info);
-          });
-        setRender(!render);
-      });
+      .catch(() => setDonor([]));
+  }, []);
+
+  const filtered = useMemo(
+    () =>
+      (donor || []).filter((x) =>
+        matchesSearch(x, search, [
+          "NameOfPatient",
+          "BloodGroup",
+          "Hospital_name",
+          "location",
+          "Contact",
+          "Attender",
+          "created_by",
+        ])
+      ),
+    [donor, search]
+  );
+
+  const { page: safePage, totalPages, total, slice } = useMemo(
+    () => paginate(filtered, page),
+    [filtered, page]
+  );
+
+  useEffect(() => {
+    if (page !== safePage) setPage(safePage);
+  }, [page, safePage]);
+
+  const onSearchChange = (value) => {
+    setSearch(value);
+    setPage(1);
   };
+
   return (
     <div className="container-fluid p-3">
-      <table className="table table-sm mt-3">
-        <thead className="thead-dark">
-          <th>S.No</th>
-          <th>Name of Patient</th>
-          <th>Blood Group</th>
-          <th>No of Units </th>
-          <th>Hospital Name</th>
-          <th>Location</th>
-          <th>Contact</th>
-          <th>Attender</th>
-          <th>Date</th>
-          <th>Created By</th>
-          {/* <th>Delete</th> */}
-        </thead>
-        <tbody>
-          {Array.isArray(donor) && donor.length !== 0 ? (
-            donor?.map((x, index) => (
+      <ListToolbar
+        title="Blood Request List"
+        search={search}
+        onSearchChange={onSearchChange}
+        placeholder="Search by patient, blood group, hospital…"
+        count={total}
+        countLabel="requests"
+      />
+      <div className="list-table-card">
+        <div className="table-responsive">
+          <table className="table table-sm mb-0">
+            <thead>
               <tr>
-                <td className="ml-3">{++index}</td>
-                <td style={{ textTransform: "capitalize" }}>
-                  {x.NameOfPatient}
-                </td>
-                <td style={{ textTransform: "capitalize" }}>{x.BloodGroup} </td>
-                <td>{x.NoOfUnits}</td>
-                <td style={{ textTransform: "capitalize" }}>
-                  {x.Hospital_name}
-                </td>
-                <td style={{ textTransform: "capitalize" }}>{x.location}</td>
-                <td style={{ textTransform: "capitalize" }}>{x.Contact}</td>
-                <td style={{ textTransform: "capitalize" }}>{x.Attender}</td>
-
-                <td style={{ textTransform: "capitalize" }}>{x.createdAt}</td>
-                <td style={{ textTransform: "capitalize" }}>{x.created_by}</td>
+                <th>S.No</th>
+                <th>Patient</th>
+                <th>Blood Group</th>
+                <th>Units</th>
+                <th>Hospital</th>
+                <th>Location</th>
+                <th>Contact</th>
+                <th>Attender</th>
+                <th>Date</th>
+                <th>Created By</th>
               </tr>
-            ))
-          ) : (
-            <tr>
-              <td className="text-center" colSpan="4">
-                <b>No data found to display.</b>
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+            </thead>
+            <tbody>
+              {slice.length !== 0 ? (
+                slice.map((x, index) => (
+                  <tr key={x.id || index}>
+                    <td>{(safePage - 1) * 10 + index + 1}</td>
+                    <td style={{ textTransform: "capitalize" }}>
+                      {x.NameOfPatient}
+                    </td>
+                    <td>{x.BloodGroup}</td>
+                    <td>{x.NoOfUnits}</td>
+                    <td style={{ textTransform: "capitalize" }}>
+                      {x.Hospital_name}
+                    </td>
+                    <td style={{ textTransform: "capitalize" }}>{x.location}</td>
+                    <td>{x.Contact}</td>
+                    <td style={{ textTransform: "capitalize" }}>{x.Attender}</td>
+                    <td>{x.createdAt}</td>
+                    <td style={{ textTransform: "capitalize" }}>
+                      {x.created_by}
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td className="list-empty" colSpan="10">
+                    {search
+                      ? "No requests match your search"
+                      : "No data found to display."}
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+        <ListPagination
+          page={safePage}
+          totalPages={totalPages}
+          total={total}
+          onPageChange={setPage}
+        />
+      </div>
     </div>
   );
 }

@@ -11,6 +11,7 @@ class Titles {
   static var about = "About";
   static var privacyPolicy = "Privacy Policy";
   static var home = "Home";
+  static var notifications = "Notifications";
   static var bloodRequest = "Blood Request";
   static var viewBloodRequest = "View Blood Request";
   static var viewPdf = "View Pdf";

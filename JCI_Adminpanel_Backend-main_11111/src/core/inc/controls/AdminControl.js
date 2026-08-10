@@ -10,6 +10,7 @@ import {
 import { FirebaseService } from "../../lib/firebase.js";
 import { convert24HrTo12Hr, validDateFormat } from "../../utils/moment.js";
 import moment from "moment";
+import { mapMediaFields } from "../../utils/mediaUrl.js";
 
 export class AdminControl { }
 
@@ -18,7 +19,7 @@ AdminControl.Member = {
     const fetched = await DBController.Admin.Create.fetchMember(body);
     // console.log("🚀 ~ getMember: ~ fetched:", fetched)
     if (fetched != null && fetched != undefined && fetched != 0) {
-      return fetched;
+      return mapMediaFields(fetched, ["profile_pic"]);
     } else {
       throw SomethingWentWrong();
     }
@@ -360,10 +361,9 @@ AdminControl.Member = {
   fetchBanners: async ({ body }) => {
     const fetched = await DBController.Admin.Banners.getBanners(body);
     if (fetched != null && fetched != undefined && fetched.length != 0) {
-      return fetched;
-    } else {
-      throw SomethingWentWrong("No Banner Found");
+      return fetched.map((row) => mapMediaFields(row, ["banner_image"]));
     }
+    return [];
   },
   createBanners: async ({ body, image }) => {
     const created = await DBController.Admin.Banners.createBanner(body, image);

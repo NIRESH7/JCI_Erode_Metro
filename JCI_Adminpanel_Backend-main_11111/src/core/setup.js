@@ -9,7 +9,12 @@ export const setup = async (gloablConfig) => {
     chalk.green("Db connected successfully"),
     "Db connection failed"
   );
-  dbSync();
+  try {
+    await dbSync();
+  } catch (error) {
+    Logger.error("Db sync failed (server still starting)");
+    console.error("DB Sync details:", error?.message || error);
+  }
   return gloablConfig;
 };
 

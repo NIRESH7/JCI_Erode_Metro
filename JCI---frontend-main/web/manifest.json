@@ -1,11 +1,11 @@
 {
-    "name": "jci",
-    "short_name": "jci",
+    "name": "JCI Erode Metro",
+    "short_name": "JCI Metro",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#000000",
-    "theme_color": "#000000",
-    "description": "A new Flutter project.",
+    "background_color": "#FFFFFF",
+    "theme_color": "#FFFFFF",
+    "description": "JCI Erode Metro members app",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

@@ -1,7 +1,8 @@
 import 'dart:convert';
-import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
 import 'package:jci/fitness_club/models/fitness_story_model.dart';
 import 'package:jci/referral/services/api_config.dart';
 import 'package:jci/referral/services/session_service.dart';
@@ -16,10 +17,14 @@ class FitnessStoryService {
     };
   }
 
-  static String _uploadFileName(String filePath) {
-    final dot = filePath.lastIndexOf('.');
-    final ext = dot >= 0 ? filePath.substring(dot).toLowerCase() : '.jpg';
-    return 'story_${DateTime.now().millisecondsSinceEpoch}$ext';
+  static String _uploadFileName(String? name) {
+    final source = (name ?? '').trim();
+    final dot = source.lastIndexOf('.');
+    final ext = dot >= 0 ? source.substring(dot).toLowerCase() : '.jpg';
+    final safeExt = (ext == '.png' || ext == '.jpeg' || ext == '.jpg' || ext == '.webp')
+        ? ext
+        : '.jpg';
+    return 'story_${DateTime.now().millisecondsSinceEpoch}$safeExt';
   }
 
   static String _errorMessage(http.Response res) {
@@ -51,7 +56,14 @@ class FitnessStoryService {
     return [];
   }
 
-  static Future<void> uploadStory(File imageFile) async {
+  /// Works on web and mobile — uses bytes instead of dart:io File paths.
+  static Future<void> uploadStoryBytes(
+    Uint8List bytes, {
+    String? fileName,
+  }) async {
+    if (bytes.isEmpty) {
+      throw Exception('Selected image is empty');
+    }
     final token = await SessionService.getToken();
     final request = http.MultipartRequest(
       'POST',
@@ -59,10 +71,10 @@ class FitnessStoryService {
     );
     if (token != null) request.headers['memberauthtoken'] = token;
     request.files.add(
-      await http.MultipartFile.fromPath(
+      http.MultipartFile.fromBytes(
         'image',
-        imageFile.path,
-        filename: _uploadFileName(imageFile.path),
+        bytes,
+        filename: _uploadFileName(fileName),
       ),
     );
     final streamed = await request.send();
@@ -72,10 +84,11 @@ class FitnessStoryService {
     }
   }
 
-  static Future<int> uploadStories(List<File> imageFiles) async {
+  static Future<int> uploadStoriesFromXFiles(List<XFile> images) async {
     var uploaded = 0;
-    for (final file in imageFiles) {
-      await uploadStory(file);
+    for (final image in images) {
+      final bytes = await image.readAsBytes();
+      await uploadStoryBytes(bytes, fileName: image.name);
       uploaded++;
     }
     return uploaded;

@@ -1,7 +1,8 @@
 import { DBController } from "../../database/DbController.js";
 import { FirebaseService } from "../../lib/firebase.js";
-import { normalizePhone, phonesMatch } from "../../utils/phoneUtils.js";
+import { normalizePhone } from "../../utils/phoneUtils.js";
 import { NotValid } from "../../errors/ErrorConstant.js";
+import { NotificationControl } from "./NotificationControl.js";
 
 const enrichReferral = async (referral) => {
   const plain = referral.toJSON ? referral.toJSON() : referral;
@@ -83,7 +84,19 @@ ReferralControl.Referral = {
     });
 
     const referrer = await DBController.Models.Member.findByPk(memberId);
+    const referralId = referral?.id || referral?.dataValues?.id;
+    const referrerName = referrer?.user_name || "Someone";
+
     if (linked_member_id) {
+      await NotificationControl.Member.create({
+        memberId: linked_member_id,
+        type: "referral_received",
+        title: "New referral for you",
+        body: `${referrerName} referred ${referred_name} — tap to respond`,
+        referralId,
+        actorMemberId: memberId,
+      });
+
       const fcmToken = await DBController.MemberSession.getFcmToken(
         linked_member_id
       );
@@ -91,9 +104,9 @@ ReferralControl.Referral = {
         await FirebaseService.notifyReferral({
           fcmToken,
           referral,
-          referrerName: referrer?.user_name || "A member",
+          referrerName,
           title: "New referral for you",
-          body: `${referrer?.user_name || "Someone"} referred ${referred_name} — tap to respond`,
+          body: `${referrerName} referred ${referred_name} — tap to respond`,
         });
       }
     }
@@ -124,6 +137,45 @@ ReferralControl.Referral = {
     ) {
       throw NotValid("referral", "Access denied");
     }
+
+    // Linked member opened the referral → notify the referrer once.
+    if (
+      plain.linked_member_id === memberId &&
+      plain.referrer_member_id &&
+      plain.referrer_member_id !== memberId
+    ) {
+      const already = await DBController.MemberNotification.existsForReferralType(
+        plain.referrer_member_id,
+        plain.id,
+        "referral_viewed"
+      );
+      if (!already) {
+        const viewer = await DBController.Models.Member.findByPk(memberId);
+        const viewerName = viewer?.user_name || "Someone";
+        await NotificationControl.Member.create({
+          memberId: plain.referrer_member_id,
+          type: "referral_viewed",
+          title: "Referral opened",
+          body: `${viewerName} accessed your referral for ${plain.referred_name}`,
+          referralId: plain.id,
+          actorMemberId: memberId,
+        });
+
+        const referrerToken = await DBController.MemberSession.getFcmToken(
+          plain.referrer_member_id
+        );
+        if (referrerToken) {
+          await FirebaseService.notifyReferral({
+            fcmToken: referrerToken,
+            referral,
+            referrerName: viewerName,
+            title: "Referral opened",
+            body: `${viewerName} accessed your referral for ${plain.referred_name}`,
+          });
+        }
+      }
+    }
+
     return await enrichReferral(referral);
   },
 
@@ -169,22 +221,33 @@ ReferralControl.Referral = {
 
     const updated = await DBController.Referral.findById(referralId);
     const responder = await DBController.Models.Member.findByPk(memberId);
+    const responderName = responder?.user_name || "Someone";
+    const statusText =
+      action === "accept"
+        ? connection_type === "completed"
+          ? "marked as Connected"
+          : "marked as Non Closed Connection"
+        : "rejected";
+
+    await NotificationControl.Member.create({
+      memberId: plain.referrer_member_id,
+      type: "referral_responded",
+      title: "Referral update",
+      body: `${responderName} ${statusText} your referral`,
+      referralId: plain.id,
+      actorMemberId: memberId,
+    });
+
     const referrerToken = await DBController.MemberSession.getFcmToken(
       plain.referrer_member_id
     );
     if (referrerToken) {
-      const statusText =
-        action === "accept"
-          ? connection_type === "completed"
-            ? "marked as Connected"
-            : "marked as Non Closed Connection"
-          : "rejected";
       await FirebaseService.notifyReferral({
         fcmToken: referrerToken,
         referral: updated,
-        referrerName: responder?.user_name || "Member",
+        referrerName: responderName,
         title: "Referral update",
-        body: `${responder?.user_name || "Someone"} ${statusText} your referral`,
+        body: `${responderName} ${statusText} your referral`,
       });
     }
 

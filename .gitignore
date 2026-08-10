@@ -1,4 +1,4 @@
-# Secrets
+# Secrets — never commit real .env
 .env
 .env.*
 !.env.example
@@ -18,12 +18,18 @@
 **/.gradle/
 **/*.zip
 
+# Logs / cache
+**/*.log
+**/.eslintcache
+**/logs/
+
 # OS / IDE
 .DS_Store
 Thumbs.db
 .idea/
 .vscode/
 *.iml
+**/Untitled
 
 # Firebase service account (never commit)
 **/jci-firebase.json

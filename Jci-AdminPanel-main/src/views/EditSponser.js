@@ -3,6 +3,7 @@ import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { ToastContainer, toast } from "react-toastify";
 import { useParams } from "react-router";
+import BackButton from "../components/BackButton";
 
 function EditSponser() {
   const { id, roles } = useParams();
@@ -102,6 +103,7 @@ function EditSponser() {
     <div>
       <form onSubmit={handleSubmit}>
         <div className="container p-3">
+          <BackButton to={roles === "main_sponser" ? "/admin/Mainsponser" : "/admin/SponserList"} />
           <h5 className="d-inline-block mb-3">UPDATE SPONSER</h5>
           <div style={{ maxWidth: 600 }}>
             <div className="form-group">

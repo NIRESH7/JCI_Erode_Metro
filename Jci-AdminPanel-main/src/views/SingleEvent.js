@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { BrowserRouter as Router, Link, useLocation } from "react-router-dom";
+import BackButton from "../components/BackButton";
 function SingleEvent(props) {
     function useQuery() {
         return new URLSearchParams(useLocation().search);
@@ -19,6 +20,7 @@ function SingleEvent(props) {
         <>
 
             <div className="container-fluid p-3">
+                <BackButton to="/admin/EventList" />
                 <div className="card mb-3" style={{ maxWidth: "400px" }}>
                     <div className="row g-0">
                         <div className="col-md-4">

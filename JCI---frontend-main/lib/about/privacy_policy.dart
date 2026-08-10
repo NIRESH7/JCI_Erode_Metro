@@ -33,7 +33,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
             const SizedBox(height: 16),
             Text(
               '${AppConfig.appName} ("we", "our", or "us") operates the mobile application '
-              'for members of JCI Erode Greencity. This policy explains what information we collect, '
+              'for members of JCI Erode Metro. This policy explains what information we collect, '
               'how we use it, and your choices.',
               style: _bodyStyle,
             ),
@@ -60,7 +60,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
             const Text('Data sharing', style: _titleStyle),
             const SizedBox(height: 8),
             Text(
-              'Data is shared only with authorized JCI Erode Greencity administrators and service '
+              'Data is shared only with authorized JCI Erode Metro administrators and service '
               'providers required to run the app (hosting, Firebase/Google for sign-in and notifications).',
               style: _bodyStyle,
             ),

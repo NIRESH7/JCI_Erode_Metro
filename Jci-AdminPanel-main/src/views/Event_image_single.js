@@ -3,6 +3,7 @@ import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { BrowserRouter as Router, Link, useLocation } from "react-router-dom";
 import srxc from "../assets/img/img.svg";
+import BackButton from "../components/BackButton";
 
 function Event_image_single(props) {
   const [eventimages, setEventimages] = useState([]);
@@ -33,6 +34,9 @@ function Event_image_single(props) {
   }
   return (
     <>
+      <div className="container-fluid p-3">
+        <BackButton to="/admin/EventList" />
+      </div>
       {Array.isArray(eventimages) && eventimages.length !== 0
         ? eventimages.map((image) => (
             <div className="card" style={{width: "18rem"}}>

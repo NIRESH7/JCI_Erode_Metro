@@ -2,6 +2,7 @@ import moment from "moment";
 import { DBController } from "../../database/DbController.js";
 import { SomethingWentWrong } from "../../errors/ErrorConstant.js";
 import { convertDateToIST } from "../../utils/moment.js";
+import { mapMediaFields } from "../../utils/mediaUrl.js";
 
 export class MemberControl { }
 
@@ -12,7 +13,7 @@ MemberControl.Member = {
       ...(query || {}),
     });
     if (fetched != null && fetched != undefined) {
-      return fetched;
+      return fetched.map((row) => mapMediaFields(row, ["profile_pic"]));
     } else {
       return [];
     }
@@ -20,7 +21,7 @@ MemberControl.Member = {
   fetchInActiveMember: async ({ body }) => {
     const fetched = await DBController.Member.Member.fetch_inactive_member(body);
     if (fetched != null && fetched != undefined) {
-      return fetched;
+      return fetched.map((row) => mapMediaFields(row, ["profile_pic"]));
     } else {
       return [];
     }
@@ -28,7 +29,7 @@ MemberControl.Member = {
   fetchoneMember: async ({ body }) => {
     const fetched = await DBController.Member.Member.fetchone_member(body);
     if (fetched != null && fetched != undefined) {
-      return fetched;
+      return mapMediaFields(fetched, ["profile_pic"]);
     } else {
       return [];
     }
@@ -37,7 +38,7 @@ MemberControl.Member = {
   fetchDob: async ({ body }) => {
     const fetched = await DBController.Member.Member.fetchdob(body);
     if (fetched != null && fetched != undefined) {
-      return fetched;
+      return fetched.map((row) => mapMediaFields(row, ["profile_pic"]));
     } else {
       return [];
     }
@@ -179,10 +180,10 @@ MemberControl.Banners = {
   fetchBanners: async ({ body }) => {
     const fetched = await DBController.Member.Banners.fetch_Banners(body);
     if (fetched != null && fetched != undefined && fetched.length != 0) {
-      return fetched;
-    } else {
-      throw SomethingWentWrong("No Banner Found");
+      return fetched.map((row) => mapMediaFields(row, ["banner_image"]));
     }
+    // Empty is normal on a fresh DB — do not 400 the home screen.
+    return [];
   },
 }
 MemberControl.BloodReq = {

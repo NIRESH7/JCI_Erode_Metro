@@ -70,6 +70,23 @@ memberRouter.post(
   MemberController.Referral.respond
 );
 
+// in-app notifications (referral received / opened / responded)
+memberRouter.get(
+  "/notifications",
+  MemberAuthenticate.verify,
+  MemberController.Notification.list
+);
+memberRouter.get(
+  "/notifications/unread-count",
+  MemberAuthenticate.verify,
+  MemberController.Notification.unreadCount
+);
+memberRouter.post(
+  "/notifications/mark-read",
+  MemberAuthenticate.verify,
+  MemberController.Notification.markRead
+);
+
 // fitness club stories
 memberRouter.post(
   "/fitness/story",

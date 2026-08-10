@@ -64,7 +64,13 @@ Future<void> _initServices() async {
       debugPrint('FATAL: Could not load production environment: $e');
     }
   }
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  try {
+    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  } catch (e) {
+    // Metro clone uses a different applicationId than the Play Store Firebase app.
+    // Register com.nutz.jci.metro in Firebase Console for full FCM support.
+    debugPrint('Firebase init skipped/failed (app still runs): $e');
+  }
 }
 
 class Main extends StatefulWidget {
